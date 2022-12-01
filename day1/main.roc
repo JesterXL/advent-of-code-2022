@@ -15,20 +15,21 @@ main =
 
 # part1 : Str -> Int Natural
 part1 = \input ->
-    Str.split input "\n"
-    |> groupCalories
-    |> List.map sumCalorieStrings
+    parse input
     |> List.max
     |> Result.withDefault 0
 
 # part2 : Str -> Int Natural
 part2 = \input ->
-    Str.split input "\n"
-    |> groupCalories
-    |> List.map sumCalorieStrings
+    parse input 
     |> List.sortDesc
     |> List.sublist { start: 0, len: 3 }
     |> List.sum
+
+parse = \input ->
+    Str.split input "\n"
+    |> groupCalories
+    |> List.map sumCalorieStrings
 
 # sumCalorieStrings : List Str -> Int Natural
 sumCalorieStrings = \listOfStr ->
