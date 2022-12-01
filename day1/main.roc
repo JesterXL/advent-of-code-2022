@@ -13,13 +13,11 @@ main =
                 Challenge 1: \(challenge1)
                 Challenge 2: \(challenge2)"""
 
-# part1 : Str -> Int Natural
 part1 = \input ->
     parse input
     |> List.max
     |> Result.withDefault 0
 
-# part2 : Str -> Int Natural
 part2 = \input ->
     parse input 
     |> List.sortDesc
@@ -31,7 +29,6 @@ parse = \input ->
     |> groupCalories
     |> List.map sumCalorieStrings
 
-# sumCalorieStrings : List Str -> Int Natural
 sumCalorieStrings = \listOfStr ->
     List.walk listOfStr 0 \state, elem ->
         when Str.toNat elem is
