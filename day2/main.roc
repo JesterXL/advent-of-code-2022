@@ -11,81 +11,42 @@ app "AoC Day 2 - Rock Paper Scissors"
 # I forgot a \n in the standard out, haha
 # Attempt 2 - 14859, CORRECT... LELZ
 
-# saysYeah = \yup ->
-#     "\(yup) yeah!"
-
-# expect saysYeah "cactus" == "cactus yeah!"
-
 main =
     task =
         inputStr <- Path.fromStr "input.txt" |> File.readUtf8 |> Task.await
-        totalScore = parse inputStr
-        part2Score = parse2 inputStr
+        lines = Str.split inputStr "\n"
+        totalScore = lines |> List.map parseLine |> List.sum |> Num.toStr
+        part2Score = lines |> List.map parseLine2 |> List.sum |> Num.toStr
         Stdout.write "Part 1: \(totalScore)\nPart 2: \(part2Score)\n"
 
     Task.onFail task \_ -> crash "Failed to read and parse input"
 
-parse = \inputStr ->
-    Str.split inputStr "\n"
-    |> List.map parseLine
-    # |> List.dropIf isUnknownStrategy
-    # |> List.sum
-    |> sumScore
-    |> Num.toStr
-
-parse2 = \inputStr ->
-    Str.split inputStr "\n"
-    |> List.map parseLine2
-    # |> List.dropIf isUnknownStrategy
-    # |> List.sum
-    |> sumScore
-    |> Num.toStr
-
 parseLine = \lineStr ->
     when lineStr is
-        "A X" -> RockVsRockDraw (1 + 3)
-        "A Y" -> RockVsPaperWin (2 + 6)
-        "A Z" -> RockVsScissorsLoss (3 + 0)
-        "B X" -> PaperVsRockLoss (1 + 0)
-        "B Y" -> PaperVsPaperDraw (2 + 3)
-        "B Z" -> PaperVsScissorsWin (3 + 6)
-        "C X" -> ScissorsVsRockWin (1 + 6)
-        "C Y" -> ScissorsVsPaperLoss (2 + 0)
-        "C Z" -> ScissorsVsScissorsDraw (3 + 3)
-        x -> UnknownStrategy "C-C-C-Combo breaker! Unknown move: \(x)" 
+        "A X" -> 4
+        "A Y" -> 8
+        "A Z" -> 3
+        "B X" -> 1
+        "B Y" -> 5
+        "B Z" -> 9
+        "C X" -> 7
+        "C Y" -> 2
+        "C Z" -> 6
+        _ -> 0
 
-# X lose, Y draw, Z win
 parseLine2 = \lineStr ->
     when lineStr is
-        "A X" -> RockVsScissorsLoss (3 + 0)
-        "A Y" -> RockVsRockDraw (1 + 3)
-        "A Z" -> RockVsPaperWin (2 + 6)
-        "B X" -> PaperVsRockLoss (1 + 0)
-        "B Y" -> PaperVsPaperDraw (2 + 3)
-        "B Z" -> PaperVsScissorsWin (3 + 6)
-        "C X" -> ScissorsVsPaperLoss (2 + 0)
-        "C Y" -> ScissorsVsScissorsDraw (3 + 3)
-        "C Z" -> ScissorsVsRockWin (1 + 6)
-        x -> UnknownStrategy "C-C-C-Combo breaker! Unknown move: \(x)" 
+        "A X" -> 3
+        "A Y" -> 4
+        "A Z" -> 8
+        "B X" -> 1
+        "B Y" -> 5
+        "B Z" -> 9
+        "C X" -> 2
+        "C Y" -> 6
+        "C Z" -> 7
+        _ -> 0
 
-# isUnknownStrategy = \gameTag ->
-#     when gameTag is
-#         UnknownStrategy _ -> true
-#         _ -> false
-
-sumScore = \rounds ->
-    List.walk rounds 0 \state, elem ->
-        when elem is
-            UnknownStrategy _ -> state
-            RockVsRockDraw score -> state + score
-            RockVsPaperWin score -> state + score
-            RockVsScissorsLoss score -> state + score
-            PaperVsRockLoss score -> state + score
-            PaperVsPaperDraw score -> state + score
-            PaperVsScissorsWin score -> state + score
-            ScissorsVsRockWin score -> state + score
-            ScissorsVsPaperLoss score -> state + score
-            ScissorsVsScissorsDraw score -> state + score
 
 
 
