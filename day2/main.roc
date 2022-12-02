@@ -6,6 +6,11 @@ app "AoC Day 2 - Rock Paper Scissors"
 # Part 1
 # Attempt 1 - 10310, CORRECT! First try, baby. Again.
 
+# Part 2
+# Attempt 1 - 14859%, lol, I did NOT see that % sign at the end. I think
+# I forgot a \n in the standard out, haha
+# Attempt 2 - 14859, CORRECT... LELZ
+
 # saysYeah = \yup ->
 #     "\(yup) yeah!"
 
@@ -15,14 +20,22 @@ main =
     task =
         inputStr <- Path.fromStr "input.txt" |> File.readUtf8 |> Task.await
         totalScore = parse inputStr
-        # dbg totalScore
-        Stdout.write "Part 1: \(totalScore)\n"
+        part2Score = parse2 inputStr
+        Stdout.write "Part 1: \(totalScore)\nPart 2: \(part2Score)\n"
 
     Task.onFail task \_ -> crash "Failed to read and parse input"
 
 parse = \inputStr ->
     Str.split inputStr "\n"
     |> List.map parseLine
+    # |> List.dropIf isUnknownStrategy
+    # |> List.sum
+    |> sumScore
+    |> Num.toStr
+
+parse2 = \inputStr ->
+    Str.split inputStr "\n"
+    |> List.map parseLine2
     # |> List.dropIf isUnknownStrategy
     # |> List.sum
     |> sumScore
@@ -39,6 +52,20 @@ parseLine = \lineStr ->
         "C X" -> ScissorsVsRockWin (1 + 6)
         "C Y" -> ScissorsVsPaperLoss (2 + 0)
         "C Z" -> ScissorsVsScissorsDraw (3 + 3)
+        x -> UnknownStrategy "C-C-C-Combo breaker! Unknown move: \(x)" 
+
+# X lose, Y draw, Z win
+parseLine2 = \lineStr ->
+    when lineStr is
+        "A X" -> RockVsScissorsLoss (3 + 0)
+        "A Y" -> RockVsRockDraw (1 + 3)
+        "A Z" -> RockVsPaperWin (2 + 6)
+        "B X" -> PaperVsRockLoss (1 + 0)
+        "B Y" -> PaperVsPaperDraw (2 + 3)
+        "B Z" -> PaperVsScissorsWin (3 + 6)
+        "C X" -> ScissorsVsPaperLoss (2 + 0)
+        "C Y" -> ScissorsVsScissorsDraw (3 + 3)
+        "C Z" -> ScissorsVsRockWin (1 + 6)
         x -> UnknownStrategy "C-C-C-Combo breaker! Unknown move: \(x)" 
 
 # isUnknownStrategy = \gameTag ->
