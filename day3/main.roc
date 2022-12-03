@@ -40,7 +40,7 @@ badgify = \sacks ->
     List.map sacks Str.toUtf8 
     |> List.map safeMapFromUtf8 
     |> List.map Set.fromList 
-    |> shrink
+    |> shrink # <-- took me 20 years to figure out
     |> List.map Set.toList
     |> List.map \item -> List.first item |> Result.withDefault "?"
     |> List.map \item -> Str.toUtf8 item |> List.first |> Result.withDefault 0 |> Num.toU32
