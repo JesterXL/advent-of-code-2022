@@ -6,15 +6,13 @@ app "AoC Day 3 - Bring Da Ruckus! WHO QWAN TEST!?"
 # Part 1
 # Attempt 1 - 7701, CORRECT! First try baby.:: Ben Stiller voice :: "Again. Again."
 
-# Part 2
-# Attempt 2 - 2644, CORRECT! First try. Man, I remember this being hard in all languages NOT Python.
-
 main =
     task =
-        inputStr <- Path.fromStr "input.txt" |> File.readUtf8 |> Task.await
+        inputStr <- Path.fromStr "input_small.txt" |> File.readUtf8 |> Task.await
         total = Str.split inputStr "\n" |> List.map sackify |> List.map utfToPriority |> List.map Num.toU32 |> List.sum |> Num.toStr
-        total2 = Str.split inputStr "\n" |> chunk 3 |> List.map badgify |> List.sum |> Num.toStr
-        Stdout.write "Part 1: \(total)\nPart 2: \(total2)\n"
+        total2 = Str.split inputStr "\n" |> chunk 3 |> List.map badgify
+        dbg T "total2:" total2
+        Stdout.write "Part 1: \(total)\nPart 2: \n"
     Task.onFail task \_ -> crash "Failed to read and parse input"
 
 sackify = \chars ->
@@ -42,10 +40,14 @@ badgify = \sacks ->
     |> List.map Set.fromList 
     |> shrink
     |> List.map Set.toList
-    |> List.map \item -> List.first item |> Result.withDefault "?"
-    |> List.map \item -> Str.toUtf8 item |> List.first |> Result.withDefault 0 |> Num.toU32
-    |> List.walk (Num.toU32 0) \state, elem ->
-        state + utfToPriority elem
+    |> List.map (\item -> List.first item |> Result.withDefault "?")
+    |> List.map Str.toUtf8
+    |> List.map whatTheEff
+    # |> List.map (\item -> List.get item 0)
+    # |> Result.withDefault 0 |> utfToPriority
+
+whatTheEff = \list ->
+    { str: List.first list, len: List.len list }
 
 safeFromUtf8 = \utf ->
     Str.fromUtf8 [utf] |> Result.withDefault ""
@@ -66,3 +68,4 @@ shrink = \sets ->
         shrink results
     else
         results
+    
