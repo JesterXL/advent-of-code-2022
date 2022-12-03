@@ -12,29 +12,35 @@ app "AoC Day 3 - Bring Da Ruckus! WHO QWAN TEST!?"
 main =
     task =
         inputStr <- Path.fromStr "input.txt" |> File.readUtf8 |> Task.await
-        part1 = Str.split inputStr "\n" |> List.map sackify |> List.map utfToPriority |> List.map Num.toU32 |> List.sum |> Num.toStr
-        part2 = Str.split inputStr "\n" |> chunk 3 |> List.map badgify |> List.sum |> Num.toStr
+        part1 =
+            Str.split inputStr "\n" 
+            |> List.map sackify 
+            |> List.map utfToPriority 
+            |> List.map Num.toU32 
+            |> List.sum 
+            |> Num.toStr
+        part2 = 
+            Str.split inputStr "\n" 
+            |> chunk 3 
+            |> List.map badgify 
+            |> List.sum 
+            |> Num.toStr
         Stdout.write "Part 1: \(part1)\nPart 2: \(part2)\n"
     Task.onFail task \_ -> crash "Failed to read and parse input"
 
 sackify = \chars ->
     list = Str.toUtf8 chars
     { before, others } = List.split list (List.len list // 2)
-    Set.intersection (Set.fromList before) (Set.fromList others) |> Set.toList |> List.get 0 |> Result.withDefault 0
+    Set.intersection (Set.fromList before) (Set.fromList others)
+    |> Set.toList 
+    |> List.get 0 
+    |> Result.withDefault 0
 
 utfToPriority = \utf ->
     if utf >= 97 && utf <= 122 then
         utf - 96
     else
         utf - 38
-
-chunk = \sacks, size ->
-    List.walk sacks { chunks: [], chunk: [], current: 0} \state, datSack ->
-        if state.current + 1 >= size then
-            { state & chunks: List.concat state.chunks [List.append state.chunk datSack], chunk: [], current: 0 }
-        else
-            { state & chunk: List.append state.chunk datSack, current: state.current + 1 }
-    |> .chunks
 
 badgify = \sacks ->
     List.map sacks Str.toUtf8 
@@ -47,12 +53,6 @@ badgify = \sacks ->
     |> List.walk (Num.toU32 0) \state, elem ->
         state + utfToPriority elem
 
-safeFromUtf8 = \utf ->
-    Str.fromUtf8 [utf] |> Result.withDefault ""
-
-safeMapFromUtf8 = \list ->
-    List.map list safeFromUtf8
-
 shrink = \sets ->
     results = 
         List.walk sets { matches: [], current: NoSet } \state, elem ->
@@ -60,9 +60,27 @@ shrink = \sets ->
                 NoSet ->
                     { state & current: CurrentSet elem }
                 CurrentSet set ->
-                    { state & matches: List.append state.matches (Set.intersection set elem), current: CurrentSet elem }
+                    { state & 
+                        matches: List.append state.matches (Set.intersection set elem), 
+                        current: CurrentSet elem 
+                    }
         |> .matches
     if List.len results > 1 then
         shrink results
     else
         results
+        
+chunk = \sacks, size ->
+    List.walk sacks { chunks: [], chunk: [], current: 0} \state, datSack ->
+        if state.current + 1 >= size then
+            { state & chunks: List.concat state.chunks [List.append state.chunk datSack], chunk: [], current: 0 }
+        else
+            { state & chunk: List.append state.chunk datSack, current: state.current + 1 }
+    |> .chunks
+
+safeFromUtf8 = \utf ->
+    Str.fromUtf8 [utf] |> Result.withDefault ""
+
+safeMapFromUtf8 = \list ->
+    List.map list safeFromUtf8
+
