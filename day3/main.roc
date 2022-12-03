@@ -12,9 +12,9 @@ app "AoC Day 3 - Bring Da Ruckus! WHO QWAN TEST!?"
 main =
     task =
         inputStr <- Path.fromStr "input.txt" |> File.readUtf8 |> Task.await
-        total = Str.split inputStr "\n" |> List.map sackify |> List.map utfToPriority |> List.map Num.toU32 |> List.sum |> Num.toStr
-        total2 = Str.split inputStr "\n" |> chunk 3 |> List.map badgify |> List.sum |> Num.toStr
-        Stdout.write "Part 1: \(total)\nPart 2: \(total2)\n"
+        part1 = Str.split inputStr "\n" |> List.map sackify |> List.map utfToPriority |> List.map Num.toU32 |> List.sum |> Num.toStr
+        part2 = Str.split inputStr "\n" |> chunk 3 |> List.map badgify |> List.sum |> Num.toStr
+        Stdout.write "Part 1: \(part1)\nPart 2: \(part2)\n"
     Task.onFail task \_ -> crash "Failed to read and parse input"
 
 sackify = \chars ->
