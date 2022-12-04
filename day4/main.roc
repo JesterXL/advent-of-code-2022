@@ -1,4 +1,4 @@
-app "AoC Day 3 - Bring Da Ruckus! WHO QWAN TEST!?"
+app "AoC Day 4 - Mop Da Flo" # https://www.youtube.com/watch?v=7uSt1oZiBts
     packages { pf: "https://github.com/roc-lang/basic-cli/releases/download/0.1.1/zAoiC9xtQPHywYk350_b7ust04BmWLW00sjb9ZPtSQk.tar.br" }
     imports [pf.Stdout, pf.Path, pf.File, pf.Task]
     provides [main] to pf
@@ -22,8 +22,6 @@ main =
         Stdout.write "Part 1: \(part1)\nPart 2: \(part2)\n"
     Task.onFail task \_ -> crash "Failed to read and parse input"
 
-# ---- Part 1 ----
-
 pairIsContained = \pairStr ->
     parsePair pairStr
     |> List.walk { keep: Bool.false, current: NoRange } \state, elem ->
@@ -34,6 +32,18 @@ pairIsContained = \pairStr ->
                 { state & keep: lineContains rangeBruh elem }
     |> .keep
 
+parsePair = \pairStr ->
+    Str.split pairStr ","
+    |> List.map \ranges -> Str.split ranges "-"
+    |> List.map \ranges ->
+        { 
+            start: List.first ranges |> parseNum, 
+            end: List.last ranges |> parseNum 
+        }
+
+parseNum = \result ->
+    result |> Result.withDefault "0" |> Str.toU32 |> Result.withDefault 0
+
 lineContains = \a, b ->
     if a.start >= b.start &&  a.end <= b.end then
         Bool.true
@@ -41,8 +51,6 @@ lineContains = \a, b ->
         Bool.true
     else
         Bool.false
-
-# ---- Part 2 ----
 
 pairOverlaps = \pairStr ->
     parsePair pairStr
@@ -64,17 +72,6 @@ lineIntersects = \a, b ->
     else
         lineContains b a
 
-# ---- Helpers ----
-
-parsePair = \pairStr ->
-    Str.split pairStr ","
-    |> List.map \ranges -> Str.split ranges "-"
-    |> List.map \ranges -> { start: List.first ranges |> parseNum, end: List.last ranges |> parseNum }
-
-parseNum = \result ->
-    result |> Result.withDefault "0" |> Str.toU32 |> Result.withDefault 0
-
-# ---- Tests ----
 
 expect lineIntersects { start: 2, end: 4} { start: 6, end: 8 } == Bool.false
 expect lineIntersects { start: 2, end: 3} { start: 4, end: 5 } == Bool.false
