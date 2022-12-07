@@ -1,0 +1,88 @@
+app "AoC Day 5 - Pick 'Em Up, Put 'Em Dowwwwnn"
+    packages { pf: "https://github.com/roc-lang/basic-cli/releases/download/0.1.1/zAoiC9xtQPHywYk350_b7ust04BmWLW00sjb9ZPtSQk.tar.br" }
+    imports [pf.Stdout, pf.Path, pf.File, pf.Task]
+    provides [main] to pf
+
+main =
+    task =
+        inputStr <- Path.fromStr "input_small.txt" |> File.readUtf8 |> Task.await
+        part1Answer = part1 inputStr
+        dbg part1Answer
+        Stdout.write "Part 1:"
+    Task.onFail task \_ -> crash "Failed to read and parse input"
+
+part1 = \str ->
+    moves = parseMoves str
+
+    stackStrList =
+        Str.split str " \n\n"
+        |> List.first
+        |> Result.withDefault ""
+        |> Str.split "\n"
+
+    stack =
+        List.last stackStrList
+        |> Result.withDefault ""
+        |> Str.trim
+        |> Str.split " "
+        |> List.dropIf \elem -> elem == ""
+        |> List.walk { index: 1, dict: Dict.empty } \state, _ ->
+            { state & dict: Dict.insert state.dict state.index [], index: state.index + 1 }
+        |> .dict
+
+    crates =
+        List.dropLast stackStrList
+        |> List.map \elem ->
+            when Str.countUtf8Bytes elem is
+                11 -> [crateAt elem 1, crateAt elem 5, crateAt elem 9]
+                35 -> [crateAt elem 1, crateAt elem 5, crateAt elem 9, crateAt elem 13, crateAt elem 17, crateAt elem 21, crateAt elem 25, crateAt elem 29, crateAt elem 33]
+                _ -> []
+        |> List.walk stack \state, elem ->
+            Dict.insert state 1 (getCrates state 1 |> List.prepend (getCrateAt elem 0)) 
+            |> Dict.insert 2 (getCrates state 2 |> List.prepend (getCrateAt elem 1)) 
+            |> Dict.insert 3 (getCrates state 3 |> List.prepend (getCrateAt elem 2))
+            |> Dict.insert 4 (getCrates state 4 |> List.prepend (getCrateAt elem 3))
+            |> Dict.insert 5 (getCrates state 5 |> List.prepend (getCrateAt elem 4))
+            |> Dict.insert 6 (getCrates state 6 |> List.prepend (getCrateAt elem 5))
+            |> Dict.insert 7 (getCrates state 7 |> List.prepend (getCrateAt elem 6))
+            |> Dict.insert 8 (getCrates state 8 |> List.prepend (getCrateAt elem 7))
+            |> Dict.insert 9 (getCrates state 9 |> List.prepend (getCrateAt elem 8)) 
+
+    { crates: crates, moves: moves }
+
+crateAt = \str, index ->
+    str |> Str.toUtf8 |> List.get index |> Result.withDefault 0 |> List.single |> Str.fromUtf8 |> Result.withDefault ""
+
+getCrateAt = \list, index ->
+    List.get list index |> Result.withDefault " " 
+
+getCrates = \dict, index ->
+    Dict.get dict index |> Result.withDefault []
+
+# setCrates = \dict, index, crates ->
+#     Dict.insert dict index crates
+
+# chunk = \sacks, size ->
+#     List.walk sacks { chunks: [], chunk: [], current: 0} \state, datSack ->
+#         if state.current + 1 >= size then
+#             { state & chunks: List.concat state.chunks [List.append state.chunk datSack], chunk: [], current: 0 }
+#         else
+#             { state & chunk: List.append state.chunk datSack, current: state.current + 1 }
+#     |> .chunks
+
+parseMoves = \str ->
+    Str.split str " \n\n"
+    |> List.last
+    |> Result.withDefault ""
+    |> Str.split "\n"
+    |> List.map \moveStr -> Str.split moveStr " "
+    |> List.map \moveStrList ->
+        {
+            amount: strToNum moveStrList 1,
+            from: strToNum moveStrList 3,
+            to: strToNum moveStrList 5
+        }
+        
+strToNum = \list, index ->
+    List.get list index |> Result.withDefault "0" |> Str.toU32 |> Result.withDefault 0 
+    

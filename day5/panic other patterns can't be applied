@@ -1,0 +1,101 @@
+app "AoC Day 5 - Pick 'Em Up, Put 'Em Dowwwwnn"
+    packages { pf: "https://github.com/roc-lang/basic-cli/releases/download/0.1.1/zAoiC9xtQPHywYk350_b7ust04BmWLW00sjb9ZPtSQk.tar.br" }
+    imports [pf.Stdout, pf.Path, pf.File, pf.Task,]
+    provides [main] to pf
+
+main =
+    task =
+        inputStr <- Path.fromStr "input_small.txt" |> File.readUtf8 |> Task.await
+        part1Answer = part1 inputStr
+        dbg part1Answer
+            # moves: [{ amount: 2, from: 2, to: 1 }, { amount: 1, from: 1, to: 2 }, { amount: 1, from: 0, to: 204 }, { amount: 0, from: 0, to: 0 }], 
+            # stack: @Dict [Pair 1 [], Pair 2 [], Pair 3 []] }
+        Stdout.write "Part 1:"
+    Task.onFail task \_ -> crash "Failed to read and parse input"
+
+part1 = \str ->
+    moves = parseMoves str
+
+    stackStrList =
+        Str.split str " \n\n"
+        |> List.first
+        |> Result.withDefault ""
+        |> Str.split "\n"
+
+    stack =
+        List.last stackStrList
+        |> Result.withDefault ""
+        |> Str.trim
+        |> Str.split " "
+        |> List.dropIf \elem -> elem == ""
+        |> List.walk { index: 1, dict: Dict.empty } \state, _ ->
+            { state & dict: Dict.insert state.dict state.index [], index: state.index + 1 }
+        |> .dict
+
+    { stack, moves }
+
+    # crates =
+    #     List.dropLast stackStrList
+    #     |> List.map \elem ->
+    #         when Str.countUtf8Bytes elem is
+    #             11 -> [crateAt elem 1, crateAt elem 5, crateAt elem 9]
+    #             35 -> [crateAt elem 1, crateAt elem 5, crateAt elem 9, crateAt elem 13, crateAt elem 17, crateAt elem 21, crateAt elem 25, crateAt elem 29, crateAt elem 33]
+    #             _ -> []
+    #     |> List.walk stack \state, elem ->
+    #         Dict.insert state 1 (getCrates state 1 |> List.prepend (getCrateAt elem 0)) 
+    #         |> Dict.insert 2 (getCrates state 2 |> List.prepend (getCrateAt elem 1)) 
+    #         |> Dict.insert 3 (getCrates state 3 |> List.prepend (getCrateAt elem 2))
+    #         |> Dict.insert 4 (getCrates state 4 |> List.prepend (getCrateAt elem 3))
+    #         |> Dict.insert 5 (getCrates state 5 |> List.prepend (getCrateAt elem 4))
+    #         |> Dict.insert 6 (getCrates state 6 |> List.prepend (getCrateAt elem 5))
+    #         |> Dict.insert 7 (getCrates state 7 |> List.prepend (getCrateAt elem 6))
+    #         |> Dict.insert 8 (getCrates state 8 |> List.prepend (getCrateAt elem 7))
+    #         |> Dict.insert 9 (getCrates state 9 |> List.prepend (getCrateAt elem 8)) 
+
+    # { moves: moves, stack: stack, crates: crates }
+            
+
+# # moveCrate = \stack, move ->
+# #     crates = getCrates stack move.from
+# #     topCrate = lastCrate crates
+# #     removed = List.dropLast crates
+# #     addCrate stack move.to topCrate |> Dict.insert move.to removed
+
+# crateAt : Str, Nat -> Str
+# crateAt = \str, index ->
+#     str |> Str.toUtf8 |> List.get index |> Result.withDefault 0 |> List.single |> Str.fromUtf8 |> Result.withDefault ""
+
+
+# # lastCrate : List Str -> Str
+# # lastCrate = \list ->
+# #     List.last list |> Result.withDefault " "
+
+
+
+# # addCrate = \dict, index, crate ->
+# #     crates = getCrates dict index
+# #     updated = List.append crates crate
+# #     Dict.insert dict index updated
+
+parseMoves = \str ->
+    Str.split str " \n\n"
+    |> List.last
+    |> Result.withDefault ""
+    |> Str.split "\n"
+    |> List.map \moveStr -> Str.split moveStr " "
+    |> List.map \moveStrList ->
+        # {
+        #     amount: strToNum moveStrList 1,
+        #     from: strToNum moveStrList 3 |> Num.sub 1,
+        #     to: strToNum moveStrList 5 |> Num.sub 1
+        # }
+        {
+            amount: List.get moveStrList 1,
+            from: List.get moveStrList 3
+            to: List.get moveStrList 5
+        }
+        
+strToNum = \list, index ->
+    List.get list index |> Result.withDefault "0" |> Str.toNat |> Result.withDefault 0 
+
+

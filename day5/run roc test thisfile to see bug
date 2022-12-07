@@ -1,0 +1,56 @@
+interface Crates
+    exposes [
+        getCrateAt
+    ]
+    imports []
+
+getCrateAt : Dict Nat (List Str), Nat, Nat -> Str
+getCrateAt = \stack, stackIndex, index ->
+    Dict.get stack stackIndex |> Result.withDefault [] |> List.get index |> Result.withDefault " "
+
+getCrates : Dict Nat (List Str), Nat -> List Str
+getCrates = \stack, index ->
+    Dict.get stack index |> Result.withDefault []
+
+# addCrate : List (List Str), Nat, Str -> List (List Str)
+# addCrate = \list, index, crate ->
+#     updatedCrates =
+#         List.get list index |> Result.withDefault [] |> List.append crate
+#     List.set list index updatedCrates
+
+# Move : {
+#     amount : Nat,
+#     from : Nat,
+#     to : Nat
+# }
+
+# moveCrate : List (List Str), Move -> List (List Str)
+# moveCrate = \list, move ->
+#     crates = getCrates list move.from
+#     topCrate = List.last crates |> Result.withDefault "no top crate"
+#     removed = List.dropLast crates
+#     result = 
+#         addCrate list move.to topCrate
+#         |> List.set move.from removed 
+#     # dbg result
+#     result
+
+expect (getCrateAt (Dict.empty |> Dict.insert 0 ["A"]) 0 0) == "A"
+expect (getCrateAt (Dict.empty |> Dict.insert 0 ["A"]) 0 1) == " "
+expect (getCrateAt (Dict.empty |> Dict.insert 0 ["A"]) 1 0) == " "
+
+expect (getCrates (Dict.empty |> Dict.insert 0 ["A"]) 0) == ["A"]
+expect (getCrates (Dict.empty |> Dict.insert 0 ["B"]) 0) == ["B"]
+expect (getCrates (Dict.empty |> Dict.insert 0 ["A"]) 1) == []
+
+# expect (addCrate [["A"], []] 1 "B") == [["A"], ["B"]]
+# expect (addCrate [[], ["B"]] 1 "A") == [[], ["B", "A"]]
+# expect (addCrate [[], []] 1 "A") == [[], ["A"]]
+# expect (addCrate [["Z", "N", ""], ["M", "C", "D"], ["P", "", ""]] 0 "D") == [["Z", "N", "", "D"], ["M", "C", "D"], ["P", "", ""]]
+# expect (addCrate [["Z", "N"], ["M", "C", "D"], ["P"]] 0 "D") == [["Z", "N", "D"], ["M", "C", "D"], ["P"]]
+
+# expect (moveCrate [["A"], []] { amount: 1, from: 0, to: 1 }) == [[], ["A"]]
+# expect (moveCrate 
+#             [["Z", "N"], ["M", "C", "D"], ["P"]] 
+#             { amount: 1, from: 0, to: 1 }) == [["Z"], ["M", "C", "D", "N"], ["P"]]
+
